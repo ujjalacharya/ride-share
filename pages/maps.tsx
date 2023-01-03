@@ -173,6 +173,9 @@ const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
         zIndex="1"
       >
         <VStack spacing={2} justifyContent="space-between">
+          <Text pb="2" fontSize="xl" fontWeight="bold">
+            Find A Ride
+          </Text>
           <Box width="100%">
             <Autocomplete>
               <Input type="text" placeholder="Origin" ref={originRef} />
