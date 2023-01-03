@@ -2,12 +2,12 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Flex,
   HStack,
   IconButton,
   Input,
   SkeletonText,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import { FaLocationArrow, FaTimes } from "react-icons/fa";
 
@@ -17,12 +17,13 @@ import {
   MarkerF,
   Autocomplete,
   DirectionsRenderer,
+  InfoWindow,
 } from "@react-google-maps/api";
 import { useEffect, useRef, useState } from "react";
 
-const center = { lat: 50.5513197, lng: 9.6915065 };
+// const center = { lat: 50.5513197, lng: 9.6915065 };
 
-const Maps = () => {
+const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
   const { isLoaded }: any = useJsApiLoader({
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || "",
     libraries: ["places"],
@@ -32,31 +33,40 @@ const Maps = () => {
   const [directionsResponse, setDirectionsResponse] = useState(null);
   const [distance, setDistance] = useState("");
   const [duration, setDuration] = useState("");
-  //   const [center, setCenter] = useState({ lat: 50.5558, lng: 9.6808 });
+  const [center, setCenter] = useState({ lat: 50.5558, lng: 9.6808 });
+
+  const [activeMarker, setActiveMarker] = useState(null);
+
+  const handleActiveMarker = (marker: any) => {
+    if (marker !== activeMarker) {
+      // return;
+      setActiveMarker(marker);
+    }
+  };
 
   /** @type React.MutableRefObject<HTMLInputElement> */
   const originRef: any = useRef();
   /** @type React.MutableRefObject<HTMLInputElement> */
   const destiantionRef: any = useRef();
 
-  //   const showPosition = (position: any) => {
-  //     if (position?.coords?.latitude && position?.coords?.longitude) {
-  //       setCenter({
-  //         lat: position.coords.latitude,
-  //         lng: position.coords.longitude,
-  //       });
-  //     }
-  //   };
+  const showPosition = (position: any) => {
+    if (position?.coords?.latitude && position?.coords?.longitude) {
+      setCenter({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+    }
+  };
 
-  //   const getLocation = () => {
-  //     if (navigator.geolocation) {
-  //       navigator.geolocation.getCurrentPosition(showPosition);
-  //     }
-  //   };
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    }
+  };
 
-  //   useEffect(() => {
-  //     getLocation();
-  //   }, []);
+  useEffect(() => {
+    getLocation();
+  }, []);
 
   if (!isLoaded) {
     return <SkeletonText />;
@@ -69,6 +79,8 @@ const Maps = () => {
     ) {
       return;
     }
+    const currentDest = originRef?.current?.value?.split(",")?.[0];
+    getDrivers(currentDest, setNearbyDrivers);
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService();
     const results: any = await directionsService.route({
@@ -86,18 +98,13 @@ const Maps = () => {
     setDirectionsResponse(null);
     setDistance("");
     setDuration("");
+    setNearbyDrivers([]);
     originRef.current.value = "";
     destiantionRef.current.value = "";
   }
 
   return (
-    <Flex
-      position="relative"
-      flexDirection="column"
-      alignItems="center"
-      h="100vh"
-      w="100vw"
-    >
+    <>
       <Box position="absolute" left={0} top={0} h="100%" w="100%">
         {/* Google Map Box */}
         <GoogleMap
@@ -116,6 +123,44 @@ const Maps = () => {
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
+
+          {nearbyDrivers?.length > 0 &&
+            nearbyDrivers.map(
+              ({
+                id,
+                firstName,
+                lastName,
+                currentLocation,
+                currentLocationLat,
+                currentLocationLong,
+              }: any) => {
+                return (
+                  <MarkerF
+                    key={id}
+                    position={{
+                      lat: parseFloat(currentLocationLong),
+                      lng: parseFloat(currentLocationLat),
+                    }}
+                    onClick={() => handleActiveMarker(id)}
+                  >
+                    {activeMarker === id && (
+                      <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                        <div>
+                          <div>
+                            <b>Driver Name:</b>
+                            {firstName} {lastName}
+                          </div>
+                          <div>
+                            <b>Driver Location:</b>
+                            {currentLocation}
+                          </div>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </MarkerF>
+                );
+              }
+            )}
         </GoogleMap>
       </Box>
       <Box
@@ -124,16 +169,16 @@ const Maps = () => {
         m={4}
         bgColor="white"
         shadow="base"
-        minW="container.md"
+        minW="400px"
         zIndex="1"
       >
-        <HStack spacing={2} justifyContent="space-between">
-          <Box flexGrow={1}>
+        <VStack spacing={2} justifyContent="space-between">
+          <Box width="100%">
             <Autocomplete>
               <Input type="text" placeholder="Origin" ref={originRef} />
             </Autocomplete>
           </Box>
-          <Box flexGrow={1}>
+          <Box width="100%">
             <Autocomplete>
               <Input
                 type="text"
@@ -144,8 +189,8 @@ const Maps = () => {
           </Box>
 
           <ButtonGroup>
-            <Button colorScheme="pink" type="submit" onClick={calculateRoute}>
-              Calculate Route
+            <Button colorScheme="green" type="submit" onClick={calculateRoute}>
+              Find Drivers
             </Button>
             <IconButton
               aria-label="center back"
@@ -153,7 +198,7 @@ const Maps = () => {
               onClick={clearRoute}
             />
           </ButtonGroup>
-        </HStack>
+        </VStack>
         <HStack spacing={4} mt={4} justifyContent="space-between">
           <Text>Distance: {distance} </Text>
           <Text>Duration: {duration} </Text>
@@ -168,7 +213,7 @@ const Maps = () => {
           />
         </HStack>
       </Box>
-    </Flex>
+    </>
   );
 };
 

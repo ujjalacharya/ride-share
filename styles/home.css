@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+}
+
+.main-container .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #000;
+  color: #fff;
+  padding: 20px;
+}
+
+.main-container .header h3 {
+  margin: 0;
+}
+
+.header .menu-right {
+  display: flex;
+  align-items: center;
+}
+
+.header .menu-right div {
+  padding-left: 10px;
+}
