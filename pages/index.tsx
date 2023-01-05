@@ -12,9 +12,11 @@ import {
   Stack,
   StackDivider,
   Button,
+  AlertIcon,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Alert } from "antd";
 
 const getDrivers = async (location: string, setNearbyDrivers: any) => {
   try {
@@ -28,8 +30,107 @@ const getDrivers = async (location: string, setNearbyDrivers: any) => {
   }
 };
 
+const bookDriver = async (id: string) => {
+  try {
+    const res = await axios.put(`${process.env.BASE_URL}/api/user`, {
+      bookingStatus: "booked",
+      id,
+    });
+
+    if (res?.data) {
+      return (
+          alert("Booked")
+      );
+    }
+  } catch (err) {
+    console.log({ err });
+  }
+};
+
 export default function Home() {
-  const [nearbyDrivers, setNearbyDrivers] = useState<any>([]);
+  const [nearbyDrivers, setNearbyDrivers] = useState<any>(null);
+
+  const renderRiders = () => {
+    if (nearbyDrivers === null) return null;
+    return nearbyDrivers.length > 0 ? (
+      nearbyDrivers.map((driver: any) => {
+        return (
+          <Box
+            p={4}
+            borderRadius="lg"
+            m={4}
+            bgColor="white"
+            shadow="base"
+            // minW="container.md"
+            zIndex="2"
+            key={driver?.id}
+          >
+            <Box flexGrow={1}>
+              <Card>
+                <CardHeader>
+                  <Heading size="md">Available Drivers</Heading>
+                </CardHeader>
+
+                <CardBody>
+                  <Stack divider={<StackDivider />} spacing="4">
+                    <Box>
+                      <Heading size="xs" textTransform="uppercase">
+                        {driver?.firstName} {driver?.lastName}
+                      </Heading>
+                      <Text pt="2" fontSize="sm">
+                        <b>Current Location:</b> {driver?.currentLocation}
+                      </Text>
+                      <Text pt="2" fontSize="sm">
+                        <b>Age:</b> {driver?.age}
+                      </Text>
+
+                      <Button
+                        colorScheme="green"
+                        mt={3}
+                        height={35}
+                        fontSize={14}
+                        onClick={() => bookDriver(driver?.id)}
+                      >
+                        Book Driver
+                      </Button>
+                    </Box>
+                  </Stack>
+                </CardBody>
+              </Card>
+            </Box>
+          </Box>
+        );
+      })
+    ) : (
+      <Box
+        p={4}
+        borderRadius="lg"
+        m={4}
+        bgColor="white"
+        shadow="base"
+        // minW="container.md"
+        zIndex="2"
+      >
+        <Box flexGrow={1}>
+          <Card>
+            <CardHeader>
+              <Heading size="md">Available Drivers</Heading>
+            </CardHeader>
+
+            <CardBody>
+              <Stack divider={<StackDivider />} spacing="4">
+                <Box>
+                  <Heading size="xs" textTransform="uppercase">
+                    No driver found !!
+                  </Heading>
+                </Box>
+              </Stack>
+            </CardBody>
+          </Card>
+        </Box>
+      </Box>
+    );
+  };
 
   return (
     <>
@@ -59,60 +160,14 @@ export default function Home() {
           pl={10}
         >
           <HStack spacing={2}>
-            <Maps
-              getDrivers={getDrivers}
-              setNearbyDrivers={setNearbyDrivers}
-              nearbyDrivers={nearbyDrivers}
-            />
-            {nearbyDrivers.length > 0 &&
-              nearbyDrivers.map((driver: any) => {
-                return (
-                  <Box
-                    p={4}
-                    borderRadius="lg"
-                    m={4}
-                    bgColor="white"
-                    shadow="base"
-                    // minW="container.md"
-                    zIndex="2"
-                    key={driver?.id}
-                  >
-                    <Box flexGrow={1}>
-                      <Card>
-                        <CardHeader>
-                          <Heading size="md">Available Drivers</Heading>
-                        </CardHeader>
-
-                        <CardBody>
-                          <Stack divider={<StackDivider />} spacing="4">
-                            <Box>
-                              <Heading size="xs" textTransform="uppercase">
-                                {driver?.firstName} {driver?.lastName}
-                              </Heading>
-                              <Text pt="2" fontSize="sm">
-                                <b>Current Location:</b>{" "}
-                                {driver?.currentLocation}
-                              </Text>
-                              <Text pt="2" fontSize="sm">
-                                <b>Age:</b> {driver?.age}
-                              </Text>
-
-                              <Button
-                                colorScheme="green"
-                                mt={3}
-                                height={35}
-                                fontSize={14}
-                              >
-                                Book Driver
-                              </Button>
-                            </Box>
-                          </Stack>
-                        </CardBody>
-                      </Card>
-                    </Box>
-                  </Box>
-                );
-              })}
+            <>
+              <Maps
+                getDrivers={getDrivers}
+                setNearbyDrivers={setNearbyDrivers}
+                nearbyDrivers={nearbyDrivers}
+              />
+              {renderRiders()}
+            </>
           </HStack>
         </Flex>
       </main>

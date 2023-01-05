@@ -20,6 +20,7 @@ export default async function userHandler(
       id,
       email,
       password,
+      bookingStatus
     },
     method,
   } = req;
@@ -50,6 +51,7 @@ export default async function userHandler(
       updateUser.currentLocationLat = currentLocationLat;
       updateUser.currentLocationLong = currentLocationLong;
       updateUser.currentLocation = currentLocation;
+      updateUser.status = bookingStatus
       await updateUser?.save();
       res.status(200).json(updateUser);
       break;
