@@ -17,7 +17,8 @@ import {
   MarkerF,
   Autocomplete,
   DirectionsRenderer,
-  InfoWindow,
+  InfoWindowF,
+  Marker,
 } from "@react-google-maps/api";
 import { useEffect, useRef, useState } from "react";
 
@@ -103,6 +104,8 @@ const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
     destiantionRef.current.value = "";
   }
 
+  console.log(directionsResponse);
+
   return (
     <>
       <Box position="absolute" left={0} top={0} h="100%" w="100%">
@@ -119,7 +122,7 @@ const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
           }}
           onLoad={(map: any) => setMap(map)}
         >
-          <MarkerF position={center} />
+          {/* <MarkerF position={center} /> */}
           {directionsResponse && (
             <DirectionsRenderer directions={directionsResponse} />
           )}
@@ -144,18 +147,18 @@ const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
                     onClick={() => handleActiveMarker(id)}
                   >
                     {activeMarker === id && (
-                      <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                      <InfoWindowF onCloseClick={() => setActiveMarker(null)}>
                         <div>
                           <div>
-                            <b>Driver Name:</b>
+                            <b>Driver Name: </b>
                             {firstName} {lastName}
                           </div>
                           <div>
-                            <b>Driver Location:</b>
+                            <b>Driver Location: </b>
                             {currentLocation}
                           </div>
                         </div>
-                      </InfoWindow>
+                      </InfoWindowF>
                     )}
                   </MarkerF>
                 );
