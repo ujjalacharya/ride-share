@@ -30,7 +30,7 @@ const getDrivers = async (location: string, setNearbyDrivers: any) => {
   }
 };
 
-const bookDriver = async (id: string) => {
+const bookDriver = async (id: string, setCurrentBookedDriver: any) => {
   try {
     const res = await axios.put(`${process.env.BASE_URL}/api/user`, {
       bookingStatus: "booked",
@@ -38,9 +38,8 @@ const bookDriver = async (id: string) => {
     });
 
     if (res?.data) {
-      return (
-          alert("Booked")
-      );
+      setCurrentBookedDriver(id);
+      return alert("Booked");
     }
   } catch (err) {
     console.log({ err });
@@ -49,6 +48,7 @@ const bookDriver = async (id: string) => {
 
 export default function Home() {
   const [nearbyDrivers, setNearbyDrivers] = useState<any>(null);
+  const [currentBookedDriver, setCurrentBookedDriver] = useState<any>(null);
 
   const renderRiders = () => {
     if (nearbyDrivers === null) return null;
@@ -85,13 +85,19 @@ export default function Home() {
                       </Text>
 
                       <Button
-                        colorScheme="green"
+                        colorScheme={
+                          currentBookedDriver === driver?.id ? "red" : "green"
+                        }
                         mt={3}
                         height={35}
                         fontSize={14}
-                        onClick={() => bookDriver(driver?.id)}
+                        onClick={() =>
+                          bookDriver(driver?.id, setCurrentBookedDriver)
+                        }
                       >
-                        Book Driver
+                        {currentBookedDriver === driver?.id
+                          ? "Booked"
+                          : "Book Driver"}
                       </Button>
                     </Box>
                   </Stack>
