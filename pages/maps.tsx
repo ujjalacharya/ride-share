@@ -84,27 +84,32 @@ const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
     getDrivers(currentDest, setNearbyDrivers);
     // eslint-disable-next-line no-undef
     const directionsService = new google.maps.DirectionsService();
-    const results: any = await directionsService.route({
-      origin: originRef.current.value,
-      destination: destiantionRef.current.value,
-      // eslint-disable-next-line no-undef
-      travelMode: google.maps.TravelMode.DRIVING,
-    });
-    setDirectionsResponse(results);
-    setDistance(results?.routes[0]?.legs[0]?.distance?.text);
-    setDuration(results?.routes[0]?.legs[0]?.duration?.text);
+    try {
+      const results: any = await directionsService.route({
+        origin: originRef.current.value,
+        destination: destiantionRef.current.value,
+        // eslint-disable-next-line no-undef
+        travelMode: google.maps.TravelMode.DRIVING,
+      });
+      if (results) {
+        setDirectionsResponse(results);
+        setDistance(results?.routes[0]?.legs[0]?.distance?.text);
+        setDuration(results?.routes[0]?.legs[0]?.duration?.text);
+      }
+    } catch (err) {
+      setNearbyDrivers("No route found from source to destination.");
+      console.log(err);
+    }
   }
 
   function clearRoute() {
     setDirectionsResponse(null);
     setDistance("");
     setDuration("");
-    setNearbyDrivers([]);
+    setNearbyDrivers(null);
     originRef.current.value = "";
     destiantionRef.current.value = "";
   }
-
-  console.log(directionsResponse);
 
   return (
     <>
@@ -128,6 +133,7 @@ const Maps = ({ getDrivers, setNearbyDrivers, nearbyDrivers }: any) => {
           )}
 
           {nearbyDrivers?.length > 0 &&
+            typeof nearbyDrivers !== "string" &&
             nearbyDrivers.map(
               ({
                 id,

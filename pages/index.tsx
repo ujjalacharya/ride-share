@@ -12,18 +12,18 @@ import {
   Stack,
   StackDivider,
   Button,
-  AlertIcon,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { Alert } from "antd";
+import { useState } from "react";
 
 const getDrivers = async (location: string, setNearbyDrivers: any) => {
   try {
     const res = await axios.get(`${process.env.BASE_URL}/api/user/${location}`);
 
-    if (res?.data) {
+    if (res?.data.length > 0) {
       setNearbyDrivers(res?.data);
+    } else {
+      setNearbyDrivers("No drivers found");
     }
   } catch (err) {
     console.log({ err });
@@ -52,8 +52,8 @@ export default function Home() {
 
   const renderRiders = () => {
     if (nearbyDrivers === null) return null;
-    return nearbyDrivers.length > 0 ? (
-      nearbyDrivers.map((driver: any) => {
+    return nearbyDrivers?.length > 0 && typeof nearbyDrivers !== "string" ? (
+      nearbyDrivers?.map((driver: any) => {
         return (
           <Box
             p={4}
@@ -127,7 +127,7 @@ export default function Home() {
               <Stack divider={<StackDivider />} spacing="4">
                 <Box>
                   <Heading size="xs" textTransform="uppercase">
-                    No driver found !!
+                    {nearbyDrivers}
                   </Heading>
                 </Box>
               </Stack>
